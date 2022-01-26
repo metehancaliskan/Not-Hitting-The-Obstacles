@@ -1,0 +1,38 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity Linear_Feedback_shift_reg is
+   port ( game_clock : in std_logic;
+	             dead : in std_logic;
+	            reset : in std_logic;
+			   obst_out : out std_logic);
+end Linear_Feedback_shift_reg;
+
+architecture Behavioral of Linear_Feedback_shift_reg is
+   signal linear_feedback_shift_register : std_logic_vector (31 downto 0) := "00000000000000000000000000100000";
+	signal linear_feedback_shift_register_next : std_logic_vector (31 downto 0) := "00000000000000000000000000100000";
+begin
+
+   process(game_clock, reset)
+	begin
+	   if (dead = '1') then
+		   linear_feedback_shift_register <= "00000000000000000000000000000000";
+	   elsif (reset = '1') then
+		   linear_feedback_shift_register <= "00000000000000000000000000100000";
+	   else   
+			if (rising_edge(game_clock)) then
+			   linear_feedback_shift_register <= linear_feedback_shift_register_next;
+		   end if;
+		end if;
+	end process;
+	
+	process(linear_feedback_shift_register)
+	begin
+	   linear_feedback_shift_register_next (31 downto 1) <= linear_feedback_shift_register (30 downto 0);
+		linear_feedback_shift_register_next (0) <= linear_feedback_shift_register(31) xor linear_feedback_shift_register(5);
+	end process;
+	
+	obst_out <= linear_feedback_shift_register(0);
+
+
+end Behavioral;

@@ -1,0 +1,56 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity select_lane is
+    Port (     game_clock : in  STD_LOGIC;
+	               obst_in : in  STD_LOGIC;
+           obstacle_1 : out  STD_LOGIC;
+           obstacle_2 : out  STD_LOGIC;
+           obstacle_3 : out  STD_LOGIC);
+end select_lane;
+
+architecture Behavioral of select_lane is
+   signal linear_feedback_shift_register : std_logic_vector (15 downto 0) := "0010000010000001";
+	signal linear_feedback_shift_register_next : std_logic_vector (15 downto 0) := "0010000010000001";
+begin
+
+   process(game_clock)
+	begin  
+		if (rising_edge(game_clock)) then
+			linear_feedback_shift_register <= linear_feedback_shift_register_next;
+		end if;
+	   if (obst_in = '1') then
+		   if ((conv_integer(linear_feedback_shift_register)) > 49152) then
+		      obstacle_1 <= '1';
+			   obstacle_2 <= '0';
+		   	 obstacle_3 <= '0';
+		   elsif (((conv_integer(linear_feedback_shift_register)) > 24576 ) and((conv_integer(linear_feedback_shift_register)) < 49152)) then
+		      obstacle_1 <= '0';
+		   	obstacle_2 <= '1';
+		   	obstacle_3 <= '0';
+		   elsif ((conv_integer(linear_feedback_shift_register)) < 24576) then
+		    obstacle_1 <= '0';
+	   		obstacle_2 <= '0';
+	   		obstacle_3 <= '1';
+	   	else
+	   	   obstacle_1 <= '0';
+	   		obstacle_2 <= '0';
+	   		obstacle_3 <= '0';
+	   	end if;
+		else
+		   obstacle_1 <= '0';
+	      obstacle_2 <= '0';
+	   	obstacle_3 <= '0';
+	   end if;
+	end process lfsr_seq;
+	
+	process(linear_feedback_shift_register)
+	begin
+	   linear_feedback_shift_register_next (15 downto 1) <= linear_feedback_shift_register (14 downto 0);
+		linear_feedback_shift_register_next (0) <= linear_feedback_shift_register(15) xor linear_feedback_shift_register(5);
+	end process lfsr_comb;
+
+end Behavioral;

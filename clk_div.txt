@@ -1,0 +1,71 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
+use ieee.numeric_std.all;
+
+library unisim;
+use unisim.vcomponents.all;
+
+entity clk_wiz is
+port
+ (clk_in_1           : in     std_logic;
+  clk_out_1          : out    std_logic);
+end clk_wiz;
+architecture Behavirol of clk_wiz is
+  attribute CORE_GENERATION_INFO : string;
+  attribute CORE_GENERATION_INFO of Behavirol : architecture is "clk_wiz,clk_wiz,{component_name=clk_wiz,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,feedback_source=FDBK_AUTO,primtype_sel=PLL_BASE,num_out_clk=1,clkin1_period=10.000,clkin2_period=10.000,use_power_down=false,use_reset=false,use_locked=false,use_inclk_stopped=false,use_status=false,use_freeze=false,use_clk_valid=false,feedback_type=SINGLE,clock_mgr_type=AUTO,manual_override=false}";
+  signal clkin1      : std_logic;
+  signal clkfbout         : std_logic;
+  signal clkfbout_buf     : std_logic;
+  signal clkout0          : std_logic;
+  signal clkout1_unused   : std_logic;
+  signal clkout2_unused   : std_logic;
+  signal clkout3_unused   : std_logic;
+  signal clkout4_unused   : std_logic;
+  signal clkout5_unused   : std_logic;
+  signal locked_unused    : std_logic;
+
+begin
+  clkin1_buf : IBUFG
+  port map
+   (O => clkin1,
+    I => clk_in_1);
+  pll_base_inst : PLL_BASE
+  generic map
+   (BANDWIDTH            => "OPTIMIZED",
+    CLK_FEEDBACK         => "CLKFBOUT",
+    COMPENSATION         => "SYSTEM_SYNCHRONOUS",
+    DIVCLK_DIVIDE        => 5,
+    CLKFBOUT_MULT        => 34,
+    CLKFBOUT_PHASE       => 0.000,
+    CLKOUT0_DIVIDE       => 27,
+    CLKOUT0_PHASE        => 0.000,
+    CLKOUT0_DUTY_CYCLE   => 0.500,
+    CLKIN_PERIOD         => 10.000,
+    REF_JITTER           => 0.010)
+  port map
+   (CLKFBOUT            => clkfbout,
+    CLKOUT0             => clkout0,
+    CLKOUT1             => clkout1_unused,
+    CLKOUT2             => clkout2_unused,
+    CLKOUT3             => clkout3_unused,
+    CLKOUT4             => clkout4_unused,
+    CLKOUT5             => clkout5_unused,
+    LOCKED              => locked_unused,
+    RST                 => '0',
+    CLKFBIN             => clkfbout_buf,
+    CLKIN               => clkin1);
+  clkf_buf : BUFG
+  port map
+   (O => clkfbout_buf,
+    I => clkfbout);
+    
+  clkout1_buf : BUFG
+  port map
+   (O   => clk_out_1,
+    I   => clkout0);
+
+
+
+end Behavirol;

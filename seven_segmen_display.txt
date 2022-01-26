@@ -1,0 +1,216 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+entity decoder is
+    Port (      alu_value : in std_logic_vector(7 downto 0); 
+					    sign : in std_logic;
+						valid : in std_logic;
+                    clk : in std_logic;
+                anode : out std_logic_vector(3 downto 0);
+               sev_seg : out std_logic_vector(6 downto 0));
+end decoder;
+architecture Behavioral of decoder is
+   component binary_bcd_converter 
+       Port ( binary_input : in std_logic_vector(7 downto 0);
+                 lsb_out : out std_logic_vector(3 downto 0);
+                 msb_out : out std_logic_vector(3 downto 0);
+                imsb_out : out std_logic_vector(3 downto 0));
+   end component;
+
+	component clk_div
+		 Port (  clk : in std_logic;
+				  out_clk : out std_logic);
+	end component;
+	
+   signal   count_digit : std_logic_vector(1 downto 0); 
+   signal   digit : std_logic_vector (3 downto 0); 
+   signal   lsb,msb,imsb : std_logic_vector(3 downto 0); 
+	signal   out_clk : std_logic; 
+
+begin
+   converter: binary_bcd_converter 
+	port map ( binary_input => alu_value, 
+                 lsb_out => lsb, 
+                 msb_out => msb, 
+                imsb_out => imsb); 
+
+   my_clk: clk_div 
+	port map (clk => clk,
+	          out_clk => out_clk ); 
+   process (out_clk)
+   begin
+      if (rising_edge(out_clk)) then 
+         count_digit <= count_digit + 1; 
+      end if; 
+   end process; 
+   process(digit)
+   begin
+   case digit is
+    when "0000" => sev_seg <= "0000001";
+    when "0001" => sev_seg <= "1001111";
+    when "0010" => sev_seg <= "0010010";
+    when "0011" => sev_seg <= "0000110";
+    when "0100" => sev_seg <= "1001100";
+    when "0101" => sev_seg <= "0100100";
+    when "0110" => sev_seg <= "0100000";
+    when "0111" => sev_seg <= "0001111";
+    when "1000" => sev_seg <= "0000000";
+    when "1001" => sev_seg <= "0000100";
+    when others => sev_seg <= "1111111";
+    end case;
+    end process;
+    
+   anode <= "0111" when count_digit = "00" else 
+              "1011" when count_digit = "01" else
+              "1101" when count_digit = "10" else
+              "1110" when count_digit = "11" else
+              "1111"; 
+
+ 
+	process (count_digit, lsb, msb, imsb, sign, valid)
+	   variable imsb_v, msb_v : std_logic_vector(3 downto 0);    
+	begin
+	   imsb_v := imsb; 
+		msb_v := msb; 
+		
+		if (imsb_v = X"0") then 
+		   if (msb_v = X"0") then 
+			   msb_v := X"F"; 
+			end if; 
+		   imsb_v := X"F"; 
+		end if; 
+			
+		if (valid = '1') then
+			if (sign = '0') then
+				case count_digit is
+					when "00" => digit <= "1111"; 
+					when "01" => digit <= imsb_v; 
+					when "10" => digit <= msb_v; 
+					when "11" => digit <= lsb; 
+					when others => digit <= "0000"; 
+				end case; 
+			else
+				case count_digit is 
+					when "00" => digit <= "1110"; 
+					when "01" => digit <= imsb_v; 
+					when "10" => digit <= msb_v; 
+					when "11" => digit <= lsb; 
+					when others => digit <= "0000";
+			end case;
+			end if;
+		else digit <= "1110";
+		end if;
+	end process;
+			
+
+end Behavioral;
+--------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+entity binary_bcd_converter is
+    Port ( binary_input : in std_logic_vector(7 downto 0);
+              lsb_out : out std_logic_vector(3 downto 0);
+              msb_out : out std_logic_vector(3 downto 0);
+             imsb_out : out std_logic_vector(3 downto 0));
+end binary_bcd_converter;
+architecture Behavioral of binary_bcd_converter is
+begin
+   process(binary_input)
+       variable count_total : INTEGER range 0 to 255 := 0; 
+	    variable lsb,msb,imsb : INTEGER range 0 to 9 := 0; 
+   begin
+	 count_total := 0; 
+    if (binary_input(7) = '1') then count_total := count_total + 128;  end if; 
+    if (binary_input(6) = '1') then count_total := count_total +  64;  end if; 
+    if (binary_input(5) = '1') then count_total := count_total +  32;  end if; 
+    if (binary_input(4) = '1') then count_total := count_total +  16;  end if; 
+    if (binary_input(3) = '1') then count_total := count_total +   8;  end if; 
+    if (binary_input(2) = '1') then count_total := count_total +   4;  end if; 
+    if (binary_input(1) = '1') then count_total := count_total +   2;  end if; 
+    if (binary_input(0) = '1') then count_total := count_total +   1;  end if; 
+
+    msb  := 0; 
+	 imsb := 0; 
+	 lsb  := 0;
+           
+    for I in 1 to 2 loop
+	    exit when (count_total >= 0 and count_total < 100); 
+	    imsb := imsb + 1; 
+	    count_total := count_total - 100;
+    end loop; 
+
+    for I in 1 to 9 loop	     
+       exit when (count_total >= 0 and count_total < 10); 
+       msb := msb + 1; 
+	    count_total := count_total - 10;
+    end loop; 
+      	    
+	 lsb := count_total; 
+
+	 case lsb is 
+	    when 0 =>  lsb_out <= "0000"; 
+	    when 1 =>  lsb_out <= "0001";
+	    when 2 =>  lsb_out <= "0010";
+	    when 3 =>  lsb_out <= "0011";
+	    when 4 =>  lsb_out <= "0100";
+	    when 5 =>  lsb_out <= "0101";
+	    when 6 =>  lsb_out <= "0110";
+	    when 7 =>  lsb_out <= "0111";
+	    when 8 =>  lsb_out <= "1000";
+	    when 9 =>  lsb_out <= "1001";    
+	    when others =>  lsb_out <= "0000"; 
+    end case; 
+    
+	 case msb is 
+	    when 9 =>  msb_out <= "1001"; 
+	    when 8 =>  msb_out <= "1000"; 
+	    when 7 =>  msb_out <= "0111"; 
+	    when 6 =>  msb_out <= "0110"; 
+	    when 5 =>  msb_out <= "0101"; 
+	    when 4 =>  msb_out <= "0100"; 
+	    when 3 =>  msb_out <= "0011"; 
+	    when 2 =>  msb_out <= "0010"; 
+	    when 1 =>  msb_out <= "0001"; 
+	    when 0 =>  msb_out <= "0000"; 
+	    when others =>  msb_out <= "0000"; 
+      end case; 
+      
+	 case imsb is  
+	    when 2 =>  imsb_out <= "0010"; 
+	    when 1 =>  imsb_out <= "0001"; 
+	    when 0 =>  imsb_out <= "0000"; 
+	    when others =>  imsb_out <= "0000"; 
+    end case; 
+   end process; 
+end Behavioral;
+-----------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+entity clk_div is
+    Port (  clk : in std_logic;
+           out_clk : out std_logic);
+end clk_div;
+
+architecture Behavioral of clk_div is
+   constant max_count : integer := (1000);  
+   signal tmp_clk : std_logic := '0'; 
+begin
+   process (clk,tmp_clk)              
+      variable div_cnt : integer := 0;   
+   begin
+      if (rising_edge(clk)) then   
+         if (div_cnt = MAX_COUNT) then 
+            tmp_clk <= not tmp_clk; 
+            div_cnt := 0; 
+         else
+            div_cnt := div_cnt + 1; 
+         end if; 
+      end if; 
+      out_clk <= tmp_clk; 
+   end process; 
+end Behavioral;

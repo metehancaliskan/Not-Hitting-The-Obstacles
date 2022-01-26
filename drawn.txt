@@ -1,0 +1,150 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
+use ieee.numeric_std.all;
+entity graphics is
+    Port ( pixel_clk   : in STD_LOGIC;
+	        player_location  : in STD_LOGIC_VECTOR (2 downto 0);
+           obst_locs_1,
+           obst_locs_2,
+           obst_locs_3 : in STD_LOGIC_VECTOR (31 downto 0);
+			  dead        : in STD_LOGIC;
+			  hcount      : in STD_LOGIC_VECTOR (10 downto 0);
+			  vcount      : in STD_LOGIC_VECTOR (10 downto 0);
+			  RedGreenBlue         : out  STD_LOGIC_VECTOR (7 downto 0));
+end graphics;
+
+architecture Behavioral of graphics is
+constant lane1_top : integer := 70;
+signal x,y : integer range 0 to 800;
+
+signal draw_obst, draw_plyr :std_logic;
+		 
+signal color_selector : std_logic_vector (2 downto 0);	
+		 
+begin
+x <= conv_integer(hcount);
+y <= conv_integer(vcount);
+
+
+draw_obst <= '1' when
+
+  (((x > 690) and (x < 730) and (y > 110) and (y < 150) and (obst_locs_1(31) = '1')) or
+	((x > 670) and (x < 710) and (y > 110) and (y < 150) and (obst_locs_1(30) = '1')) or
+    ((x > 650) and (x < 690) and (y > 110) and (y < 150) and (obst_locs_1(29) = '1')) or
+	((x > 630) and (x < 670) and (y > 110) and (y < 150) and (obst_locs_1(28) = '1')) or
+	((x > 610) and (x < 650) and (y > 110) and (y < 150) and (obst_locs_1(27) = '1')) or
+	((x > 590) and (x < 630) and (y > 110) and (y < 150) and (obst_locs_1(26) = '1')) or
+	((x > 570) and (x < 610) and (y > 110) and (y < 150) and (obst_locs_1(25) = '1')) or
+    ((x > 550) and (x < 590) and (y > 110) and (y < 150) and (obst_locs_1(24) = '1')) or
+    ((x > 530) and (x < 570) and (y > 110) and (y < 150) and (obst_locs_1(23) = '1')) or
+	((x > 510) and (x < 550) and (y > 110) and (y < 150) and (obst_locs_1(22) = '1')) or
+	((x > 490) and (x < 530) and (y > 110) and (y < 150) and (obst_locs_1(21) = '1')) or
+	((x > 470) and (x < 510) and (y > 110) and (y < 150) and (obst_locs_1(20) = '1')) or
+	((x > 450) and (x < 490) and (y > 110) and (y < 150) and (obst_locs_1(19) = '1')) or
+	((x > 430) and (x < 470) and (y > 110) and (y < 150) and (obst_locs_1(18) = '1')) or
+	((x > 410) and (x < 450) and (y > 110) and (y < 150) and (obst_locs_1(17) = '1')) or
+	((x > 390) and (x < 430) and (y > 110) and (y < 150) and (obst_locs_1(16) = '1')) or
+	((x > 370) and (x < 410) and (y > 110) and (y < 150) and (obst_locs_1(15) = '1')) or
+	((x > 350) and (x < 390) and (y > 110) and (y < 150) and (obst_locs_1(14) = '1')) or
+	((x > 330) and (x < 370) and (y > 110) and (y < 150) and (obst_locs_1(13) = '1')) or
+	((x > 310) and (x < 350) and (y > 110) and (y < 150) and (obst_locs_1(12) = '1')) or
+	((x > 290) and (x < 330) and (y > 110) and (y < 150) and (obst_locs_1(11) = '1')) or
+	((x > 270) and (x < 310) and (y > 110) and (y < 150) and (obst_locs_1(10) = '1')) or
+	((x > 250) and (x < 290) and (y > 110) and (y < 150) and (obst_locs_1(9) = '1')) or
+	((x > 230) and (x < 270) and (y > 110) and (y < 150) and (obst_locs_1(8) = '1')) or
+	((x > 210) and (x < 250) and (y > 110) and (y < 150) and (obst_locs_1(7) = '1')) or
+    ((x > 190) and (x < 230) and (y > 110) and (y < 150) and (obst_locs_1(6) = '1')) or
+	((x > 170) and (x < 210) and (y > 110) and (y < 150) and (obst_locs_1(5) = '1')) or
+	((x > 150) and (x < 190) and (y > 110) and (y < 150) and (obst_locs_1(4) = '1')) or
+	((x > 130) and (x < 170) and (y > 110) and (y < 150) and (obst_locs_1(3) = '1')) or
+	((x > 110) and (x < 150) and (y > 110) and (y < 150) and (obst_locs_1(2) = '1')) or
+	((x > 90) and (x < 130) and (y > 110) and (y < 150) and (obst_locs_1(1) = '1')) or
+	((x > 70) and (x < 110) and (y > 110) and (y < 150) and (obst_locs_1(0) = '1')) or
+
+
+   ((x > 690) and (x < 730) and (y > 220) and (y < 260) and (obst_locs_2(31) = '1')) or
+	((x > 670) and (x < 710) and (y > 220) and (y < 260) and (obst_locs_2(30) = '1')) or
+	((x > 650) and (x < 690) and (y > 220) and (y < 260) and (obst_locs_2(29) = '1')) or
+	((x > 630) and (x < 670) and (y > 220) and (y < 260) and (obst_locs_2(28) = '1')) or
+	((x > 610) and (x < 650) and (y > 220) and (y < 260) and (obst_locs_2(27) = '1')) or
+	((x > 590) and (x < 630) and (y > 220) and (y < 260) and (obst_locs_2(26) = '1')) or
+	((x > 570) and (x < 610) and (y > 220) and (y < 260) and (obst_locs_2(25) = '1')) or
+	((x > 550) and (x < 590) and (y > 220) and (y < 260) and (obst_locs_2(24) = '1')) or
+	((x > 530) and (x < 570) and (y > 220) and (y < 260) and (obst_locs_2(23) = '1')) or
+	((x > 510) and (x < 550) and (y > 220) and (y < 260) and (obst_locs_2(22) = '1')) or
+	((x > 490) and (x < 530) and (y > 220) and (y < 260) and (obst_locs_2(21) = '1')) or
+	((x > 470) and (x < 510) and (y > 220) and (y < 260) and (obst_locs_2(20) = '1')) or
+	((x > 450) and (x < 490) and (y > 220) and (y < 260) and (obst_locs_2(19) = '1')) or
+	((x > 430) and (x < 470) and (y > 220) and (y < 260) and (obst_locs_2(18) = '1')) or
+	((x > 410) and (x < 450) and (y > 220) and (y < 260) and (obst_locs_2(17) = '1')) or
+	((x > 390) and (x < 430) and (y > 220) and (y < 260) and (obst_locs_2(16) = '1')) or
+	((x > 370) and (x < 410) and (y > 220) and (y < 260) and (obst_locs_2(15) = '1')) or
+	((x > 350) and (x < 390) and (y > 220) and (y < 260) and (obst_locs_2(14) = '1')) or
+	((x > 330) and (x < 370) and (y > 220) and (y < 260) and (obst_locs_2(13) = '1')) or
+	((x > 310) and (x < 350) and (y > 220) and (y < 260) and (obst_locs_2(12) = '1')) or
+	((x > 290) and (x < 330) and (y > 220) and (y < 260) and (obst_locs_2(11) = '1')) or
+	((x > 270) and (x < 310) and (y > 220) and (y < 260) and (obst_locs_2(10) = '1')) or
+	((x > 250) and (x < 290) and (y > 220) and (y < 260) and (obst_locs_2(9) = '1')) or
+	((x > 230) and (x < 270) and (y > 220) and (y < 260) and (obst_locs_2(8) = '1')) or
+	((x > 210) and (x < 250) and (y > 220) and (y < 260) and (obst_locs_2(7) = '1')) or
+	((x > 190) and (x < 230) and (y > 220) and (y < 260) and (obst_locs_2(6) = '1')) or
+	((x > 170) and (x < 210) and (y > 220) and (y < 260) and (obst_locs_2(5) = '1')) or
+	((x > 150) and (x < 190) and (y > 220) and (y < 260) and (obst_locs_2(4) = '1')) or
+	((x > 130) and (x < 170) and (y > 220) and (y < 260) and (obst_locs_2(3) = '1')) or
+	((x > 110) and (x < 150) and (y > 220) and (y < 260) and (obst_locs_2(2) = '1')) or
+	((x > 90) and (x < 130) and (y > 220) and (y < 260) and (obst_locs_2(1) = '1')) or
+	((x > 70) and (x < 110) and (y > 220) and (y < 260) and (obst_locs_2(0) = '1')) or
+	
+   ((x > 690) and (x < 730) and (y > 330) and (y < 370) and (obst_locs_3(31) = '1')) or
+	((x > 670) and (x < 710) and (y > 330) and (y < 370) and (obst_locs_3(30) = '1')) or
+	((x > 650) and (x < 690) and (y > 330) and (y < 370) and (obst_locs_3(29) = '1')) or
+	((x > 630) and (x < 670) and (y > 330) and (y < 370) and (obst_locs_3(28) = '1')) or
+	((x > 610) and (x < 650) and (y > 330) and (y < 370) and (obst_locs_3(27) = '1')) or
+	((x > 590) and (x < 630) and (y > 330) and (y < 370) and (obst_locs_3(26) = '1')) or
+	((x > 570) and (x < 610) and (y > 330) and (y < 370) and (obst_locs_3(25) = '1')) or
+	((x > 550) and (x < 590) and (y > 330) and (y < 370) and (obst_locs_3(24) = '1')) or
+	((x > 530) and (x < 570) and (y > 330) and (y < 370) and (obst_locs_3(23) = '1')) or
+	((x > 510) and (x < 550) and (y > 330) and (y < 370) and (obst_locs_3(22) = '1')) or
+	((x > 490) and (x < 530) and (y > 330) and (y < 370) and (obst_locs_3(21) = '1')) or
+	((x > 470) and (x < 510) and (y > 330) and (y < 370) and (obst_locs_3(20) = '1')) or
+	((x > 450) and (x < 490) and (y > 330) and (y < 370) and (obst_locs_3(19) = '1')) or
+	((x > 430) and (x < 470) and (y > 330) and (y < 370) and (obst_locs_3(18) = '1')) or
+	((x > 410) and (x < 450) and (y > 330) and (y < 370) and (obst_locs_3(17) = '1')) or
+	((x > 390) and (x < 430) and (y > 330) and (y < 370) and (obst_locs_3(16) = '1')) or
+	((x > 370) and (x < 410) and (y > 330) and (y < 370) and (obst_locs_3(15) = '1')) or
+	((x > 350) and (x < 390) and (y > 330) and (y < 370) and (obst_locs_3(14) = '1')) or
+	((x > 330) and (x < 370) and (y > 330) and (y < 370) and (obst_locs_3(13) = '1')) or
+	((x > 310) and (x < 350) and (y > 330) and (y < 370) and (obst_locs_3(12) = '1')) or
+	((x > 290) and (x < 330) and (y > 330) and (y < 370) and (obst_locs_3(11) = '1')) or
+	((x > 270) and (x < 310) and (y > 330) and (y < 370) and (obst_locs_3(10) = '1')) or
+	((x > 250) and (x < 290) and (y > 330) and (y < 370) and (obst_locs_3(9) = '1')) or
+	((x > 230) and (x < 270) and (y > 330) and (y < 370) and (obst_locs_3(8) = '1')) or
+	((x > 210) and (x < 250) and (y > 330) and (y < 370) and (obst_locs_3(7) = '1')) or
+	((x > 190) and (x < 230) and (y > 330) and (y < 370) and (obst_locs_3(6) = '1')) or
+	((x > 170) and (x < 210) and (y > 330) and (y < 370) and (obst_locs_3(5) = '1')) or
+	((x > 150) and (x < 190) and (y > 330) and (y < 370) and (obst_locs_3(4) = '1')) or
+	((x > 130) and (x < 170) and (y > 330) and (y < 370) and (obst_locs_3(3) = '1')) or
+	((x > 110) and (x < 150) and (y > 330) and (y < 370) and (obst_locs_3(2) = '1')) or
+	((x > 90) and (x < 130) and (y > 330) and (y < 370) and (obst_locs_3(1) = '1')) or
+	((x > 70) and (x < 110) and (y > 330) and (y < 370) and (obst_locs_3(0) = '1')))
+else '0';
+
+	
+draw_plyr <= '1' when
+
+    (((x > 70) and (x < 110) and (y > 110) and (y < 150) and (player_location = "100")) or
+	((x > 70) and (x < 110) and (y > 220) and (y < 260) and (player_location = "010")) or
+	((x > 70) and (x < 110) and (y > 330) and (y < 370) and (player_location = "001"))) else '0';
+
+color_selector <= draw_obst & draw_plyr & dead;
+with color_selector select
+   RedGreenBlue <= "11100000" when "100",
+   "00000011" when "110",
+	"00000011" when "010",
+	"11111111" when "101",
+	"11111111" when "111",
+	"11111111" when "011",
+	"00000000" when others;
+end Behavioral;

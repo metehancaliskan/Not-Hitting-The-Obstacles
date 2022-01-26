@@ -1,0 +1,26 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity shift_register is
+    Port ( game_clock : in STD_LOGIC;
+	           obst_in : in STD_LOGIC;
+				     dead : in STD_LOGIC;
+			       reset : in STD_LOGIC;
+             path : out  STD_LOGIC_VECTOR (31 downto 0));
+end shift_register;
+
+architecture Behavioral of shift_register is
+   signal lane : std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
+begin
+   process (game_clock, obst_in, dead, reset)
+	begin
+	   if ((reset = '1') or (dead = '1')) then
+		   lane <= "00000000000000000000000000000000";
+	   elsif (rising_edge(game_clock)) then
+		   lane <= obst_in & lane (31 downto 1);
+		end if;
+	end process;
+	
+	path <= lane;
+
+
+end Behavioral;
